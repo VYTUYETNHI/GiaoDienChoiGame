@@ -137,7 +137,7 @@ do
         string title = "[HUNTING SNAKE]🐍";
         string speed = velocity == 100 ? "Slow" : velocity == 70 ? "Normal" : "Fast";
         string headerSpeed = $"Speed: {speed}";
-        string footerPause = "[Space]: Pause the game";
+        string footerPause = "[Enter]: Pause the game";
         string footerScore = $"Score: {score}";
 
         //top border
