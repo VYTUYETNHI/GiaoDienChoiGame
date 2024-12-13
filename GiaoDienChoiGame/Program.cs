@@ -73,6 +73,8 @@ do
     Direction? direction = null;
     Queue<(int X, int Y)> snake = new();
     (int X, int Y) = (2, 1);
+
+    bool isPaused = false;
     bool closeRequested = false;
     Random random = new Random();
 
@@ -82,6 +84,7 @@ do
     bool specialFoodActive = false;
     int normalFoodCounter = 0; // Count the number of times normal food is eaten
     bool specialFoodBlinking = false; // To control the blinking effect
+
 
     void PositionFood()
     {
@@ -344,6 +347,7 @@ After Game Over, press Enter to restart.
     }
     void DisplayGameOver(int score)
     {
+        
         Console.Clear();
         // Set the color for the "GAME OVER" text
         Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -369,6 +373,7 @@ Your final score: " + (score == 0 ? "0 " : score.ToString());
         ConsoleKey key = Console.ReadKey(true).Key;
         if (key == ConsoleKey.Enter)
         {
+        
             playAgain = true;
         }
     }
@@ -395,100 +400,134 @@ Your final score: " + (score == 0 ? "0 " : score.ToString());
                 Console.Write("Console was resized. Snake game has ended.");
                 return;
             }
-
-            switch (direction)
-            {
-                case Direction.Up: Y--; break;
-                case Direction.Down: Y++; break;
-                case Direction.Left: X--; break;
-                case Direction.Right: X++; break;
-            }
-            if (Y < headerHeight || Y >= (height - footerHeight - 1) || X <= sideWidth || X >= (width - sideWidth) ||
-                map[X, Y] is Tile.Snake)
-            {
-                WindowsMediaPlayer crashSound = new WindowsMediaPlayer();
-                crashSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeHittingSound.wav";
-                crashSound.controls.play();
-                Console.Clear();
-                //string? replayInput = Console.ReadLine();
-                DisplayGameOver(snake.Count - 1);
-                playAgain = playAgain;
-                break;
-            }
-
-            Console.SetCursorPosition(X, Y);
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(DirectionChars[(int)direction!]);
-            Console.ResetColor();
-            snake.Enqueue((X, Y));
-
-            if (map[X, Y] is Tile.Food)
-            {
-                velocity = Math.Max(velocity - 2, 10);  // Increase speed, ensuring it doesn't go below a threshold
-                sleep = TimeSpan.FromMilliseconds(velocity);
-                WindowsMediaPlayer eatSound = new WindowsMediaPlayer();
-                eatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
-                eatSound.controls.play();
-                PositionFood();
-
-                normalFoodCounter++;
-
-                if (normalFoodCounter % 5 == 0)
-                {
-                    PositionSpecialFood();
-                }
-            }
-            else if (specialFoodActive && X == specialX && Y == specialY)
-            {
-                specialFoodActive = false;
-
-                map[specialX, specialY] = Tile.Open;
-                Console.SetCursorPosition(specialX, specialY);
-                Console.Write(' ');
-                snake.Enqueue((X, Y));
-                snake.Enqueue((X, Y));
-
-                WindowsMediaPlayer specialEatSound = new WindowsMediaPlayer();
-                specialEatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
-                specialEatSound.controls.play();
-            }
-            else
-            {
-                (int x, int y) = snake.Dequeue();
-                map[x, y] = Tile.Open;
-                Console.SetCursorPosition(x, y);
-                Console.Write(' ');
-            }
-
-            map[X, Y] = Tile.Snake;
-
-            if (specialFoodActive)
-            {
-                var timeElapsed = DateTime.Now - specialFoodSpawnTime;
-
-                if (timeElapsed > specialFoodLifetime)
-                {
-                    specialFoodActive = false;
-                    Console.SetCursorPosition(specialX, specialY);
-                    Console.Write(' ');
-                }
-                else if (timeElapsed > specialFoodLifetime - TimeSpan.FromSeconds(1))
-                {
-                    specialFoodBlinking = !specialFoodBlinking;
-                    Console.SetCursorPosition(specialX, specialY);
-                    Console.ForegroundColor = specialFoodBlinking ? ConsoleColor.Yellow : ConsoleColor.Black;
-                    Console.Write('★');
-                    Console.ResetColor();
-                }
-            }
-
             if (Console.KeyAvailable)
             {
-                GetDirection();
+                var key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.Enter)
+                {
+                    isPaused = !isPaused;  // Toggle pause state
+                }
+                else
+                {
+                    // Update direction based on key press
+                    switch (key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            if (direction != Direction.Down) direction = Direction.Up; // Prevent reversing
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (direction != Direction.Up) direction = Direction.Down; // Prevent reversing
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            if (direction != Direction.Right) direction = Direction.Left; // Prevent reversing
+                            break;
+                        case ConsoleKey.RightArrow:
+                            if (direction != Direction.Left) direction = Direction.Right; // Prevent reversing
+                            break;
+                        case ConsoleKey.Escape:
+                            closeRequested = true;
+                            DisplayGameOver(snake.Count - 1);// Allow the player to exit the game
+                            break;
+                    }
+                }
             }
+            if ((!isPaused))
+            {
 
-            DrawConsole(snake.Count - 1, velocity);
-            System.Threading.Thread.Sleep(sleep);
+                switch (direction)
+                {
+                    case Direction.Up: Y--; break;
+                    case Direction.Down: Y++; break;
+                    case Direction.Left: X--; break;
+                    case Direction.Right: X++; break;
+                }
+                if (Y < headerHeight || Y >= (height - footerHeight - 1) || X <= sideWidth || X >= (width - sideWidth) ||
+                    map[X, Y] is Tile.Snake)
+                {
+                    WindowsMediaPlayer crashSound = new WindowsMediaPlayer();
+                    crashSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeHittingSound.wav";
+                    crashSound.controls.play();
+                    Console.Clear();
+                    //string? replayInput = Console.ReadLine();
+                    DisplayGameOver(snake.Count - 1);
+                    playAgain = playAgain;
+                    break;
+                }
+
+                Console.SetCursorPosition(X, Y);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(DirectionChars[(int)direction!]);
+                Console.ResetColor();
+                snake.Enqueue((X, Y));
+
+                if (map[X, Y] is Tile.Food)
+                {
+                    velocity = Math.Max(velocity - 2, 10);  // Increase speed, ensuring it doesn't go below a threshold
+                    sleep = TimeSpan.FromMilliseconds(velocity);
+                    WindowsMediaPlayer eatSound = new WindowsMediaPlayer();
+                    eatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
+                    eatSound.controls.play();
+                    PositionFood();
+
+                    normalFoodCounter++;
+
+                    if (normalFoodCounter % 5 == 0)
+                    {
+                        PositionSpecialFood();
+                    }
+                }
+                else if (specialFoodActive && X == specialX && Y == specialY)
+                {
+                    specialFoodActive = false;
+
+                    map[specialX, specialY] = Tile.Open;
+                    Console.SetCursorPosition(specialX, specialY);
+                    Console.Write(' ');
+                    snake.Enqueue((X, Y));
+                    snake.Enqueue((X, Y));
+
+                    WindowsMediaPlayer specialEatSound = new WindowsMediaPlayer();
+                    specialEatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
+                    specialEatSound.controls.play();
+                }
+                else
+                {
+                    (int x, int y) = snake.Dequeue();
+                    map[x, y] = Tile.Open;
+                    Console.SetCursorPosition(x, y);
+                    Console.Write(' ');
+                }
+
+                map[X, Y] = Tile.Snake;
+
+                if (specialFoodActive)
+                {
+                    var timeElapsed = DateTime.Now - specialFoodSpawnTime;
+
+                    if (timeElapsed > specialFoodLifetime)
+                    {
+                        specialFoodActive = false;
+                        Console.SetCursorPosition(specialX, specialY);
+                        Console.Write(' ');
+                    }
+                    else if (timeElapsed > specialFoodLifetime - TimeSpan.FromSeconds(1))
+                    {
+                        specialFoodBlinking = !specialFoodBlinking;
+                        Console.SetCursorPosition(specialX, specialY);
+                        Console.ForegroundColor = specialFoodBlinking ? ConsoleColor.Yellow : ConsoleColor.Black;
+                        Console.Write('★');
+                        Console.ResetColor();
+                    }
+                }
+
+                if (Console.KeyAvailable)
+                {
+                    GetDirection();
+                }
+
+                DrawConsole(snake.Count - 1, velocity);
+                System.Threading.Thread.Sleep(sleep);
+            }
         }
     }
     catch (Exception e)
@@ -502,6 +541,7 @@ Your final score: " + (score == 0 ? "0 " : score.ToString());
         Console.Clear();
         Console.WriteLine(exception?.ToString() ?? "Snake was closed.");
     }
+
 } while (playAgain);
 enum Direction
 {
