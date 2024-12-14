@@ -90,36 +90,79 @@ do
 
     void PositionFood()
     {
-        int foodX, foodY;
-        do
+        Random random = new Random();
+
+        List<(int X, int Y)> possibleCoordinates = new();
+        for (int i = sideWidth + 1; i <= (width - sideWidth - 1); i++)
         {
-            foodX = random.Next(sideWidth, width - sideWidth);
-            foodY = random.Next(headerHeight, height - footerHeight - 1);
-        } while (map[foodX, foodY] != Tile.Open);
+            for (int j = headerHeight + 2; j <= (height - footerHeight - 2); j++)
+            {
+                if (map[i, j] is Tile.Open)
+                {
+                    possibleCoordinates.Add((i, j));
+                }
+            }
+        }
 
-        map[foodX, foodY] = Tile.Food;
-        Console.SetCursorPosition(foodX, foodY);
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.Write(listOfFoodChars[random.Next(listOfFoodChars.Length)]);
-        Console.ResetColor();
+        if (possibleCoordinates.Count > 0)
+        {
+            var (X, Y) = possibleCoordinates[random.Next(possibleCoordinates.Count)];
+            map[X, Y] = Tile.Food;
+
+            char foodChar = listOfFoodChars[random.Next(listOfFoodChars.Length)];
+            var colors = new List<ConsoleColor> { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Blue, ConsoleColor.Yellow, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.DarkYellow };
+            Console.SetCursorPosition(X, Y);
+            Console.ForegroundColor = colors[random.Next(colors.Count)];
+            Console.Write(foodChar);
+            Console.ResetColor();
+        }
     }
-
     void PositionSpecialFood()
     {
-        do
+        List<(int X, int Y)> possibleCoordinates = new();
+        for (int i = sideWidth + 1; i <= (width - sideWidth - 1); i++)
         {
-            specialX = random.Next(sideWidth, width - sideWidth);
-            specialY = random.Next(headerHeight, height - footerHeight - 1);
-        } while (map[specialX, specialY] != Tile.Open);
+            for (int j = headerHeight + 2; j <= (height - footerHeight - 2); j++)
+            {
+                if (map[i, j] is Tile.Open)
+                {
+                    possibleCoordinates.Add((i, j));
+                }
+            }
+        }
 
-        specialFoodActive = true;
-        specialFoodSpawnTime = DateTime.Now;
-        map[specialX, specialY] = Tile.Food;
-        Console.SetCursorPosition(specialX, specialY);
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write('★');
-        Console.ResetColor();
+        if (possibleCoordinates.Count > 0)
+        {
+            (specialX, specialY) = possibleCoordinates[random.Next(possibleCoordinates.Count)];
+            specialFoodActive = true;
+            specialFoodSpawnTime = DateTime.Now;
 
+            Console.SetCursorPosition(specialX, specialY);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write('★'); //special food's icon
+            Console.ResetColor();
+        }
+    }
+    //check special food's lifetime
+    if (specialFoodActive)
+    {
+        var timeElapsed = DateTime.Now - specialFoodSpawnTime;
+
+        if (timeElapsed > specialFoodLifetime)
+        {
+            specialFoodActive = false;
+            Console.SetCursorPosition(specialX, specialY);
+            Console.Write(' ');
+        }
+        else if (timeElapsed > specialFoodLifetime - TimeSpan.FromSeconds(1))
+        {
+            //make the special food blink during the last 1 sec
+            specialFoodBlinking = !specialFoodBlinking;
+            Console.SetCursorPosition(specialX, specialY);
+            Console.ForegroundColor = specialFoodBlinking ? ConsoleColor.Yellow : ConsoleColor.Black;
+            Console.Write('★');
+            Console.ResetColor();
+        }
     }
 
     void GetDirection()
