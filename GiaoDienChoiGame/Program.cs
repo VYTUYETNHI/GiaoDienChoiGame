@@ -6,11 +6,9 @@ using System.Text;
 using static System.Formats.Asn1.AsnWriter;
 using System.Runtime.CompilerServices;
 
-
-
 Console.OutputEncoding = Encoding.UTF8;
 Exception? exception = null;
-    bool playAgain;
+bool playAgain;
 do
 {
     playAgain = false; // Khởi tạo trạng thái "chơi lại"
@@ -88,6 +86,8 @@ do
     int normalFoodCounter = 0; // Count the number of times normal food is eaten
     bool specialFoodBlinking = false; // To control the blinking effect
 
+    List<(int X, int Y)> possibleCoordinates = new();
+
     void PositionFood()
     {
         int foodX, foodY;
@@ -119,6 +119,7 @@ do
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.Write('★');
         Console.ResetColor();
+
     }
 
     void GetDirection()
@@ -347,81 +348,96 @@ After Game Over, press Enter to restart.
             }
         }
     }
-    void SaveHighScore(int score)
+    void SaveHighScore(string playerName, int score)
     {
         string filePath = "highscore.txt";
-        List<int> scores = new List<int>();
+        List<(string Name, int Score)> highScores = new List<(string, int)>();
         string updateMessage = "No new high score.";
 
         try
         {
-            // Đọc điểm từ tệp (nếu tồn tại)
             if (File.Exists(filePath))
             {
                 string[] lines = File.ReadAllLines(filePath);
                 foreach (string line in lines)
                 {
-                    if (int.TryParse(line, out int existingScore))
+                    var parts = line.Split(':');
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int existingScore))
                     {
-                        scores.Add(existingScore);
+                        highScores.Add((parts[0], existingScore));
                     }
                 }
             }
-
-            //add new scores
-            scores.Add(score);
-
-            //arrange from high to low
-            scores = scores.OrderByDescending(s => s).ToList();
-
-            if (scores.Take(5).Contains(score))
+   
+            highScores.Add((playerName, score));
+            highScores = highScores.OrderByDescending(s => s.Score).Take(5).ToList();
+            File.WriteAllLines(filePath, highScores.Select(s => $"{s.Name}:{s.Score}"));
+            if (highScores.Any(s => s.Score == score && s.Name == playerName))
             {
-                scores = scores.Take(5).ToList();
-                File.WriteAllLines(filePath, scores.Select(s => s.ToString()));
                 updateMessage = "High scores updated!";
             }
-
         }
         catch (Exception ex)
         {
-            updateMessage = $"Error saving high score: {ex.Message}";
+            Console.WriteLine($"Error saving high score: {ex.Message}");
         }
+
         DisplayHighScores(updateMessage);
     }
+
     void DisplayHighScores(string updateMessage)
     {
         string filePath = "highscore.txt";
+        int nameWidth = 15; 
+        int scoreWidth = 5; 
 
         try
         {
-            int width = Console.WindowWidth;
-            string highScoresTitle = "║║║ TOP 5 High Scores ║║║";
-            int x = width - highScoresTitle.Length;
-            int y = 0;
-            Console.SetCursorPosition(x, y++);
-            Console.WriteLine(highScoresTitle);
-
             if (File.Exists(filePath))
             {
                 string[] lines = File.ReadAllLines(filePath);
+                string highScoresTitle = "||===== High Scores =====||";
+                int totalWidth = nameWidth + scoreWidth + 7; 
+                int x = Console.WindowWidth - totalWidth - 2; 
+                int y = 0;
+
+ 
+                Console.SetCursorPosition(x, y++);
+                Console.WriteLine(highScoresTitle);
+
+                string separator = new string('-', totalWidth);
+                Console.SetCursorPosition(x, y++);
+                Console.WriteLine(separator);
+
                 foreach (string line in lines)
                 {
-                    Console.SetCursorPosition((x + (highScoresTitle.Length / 2)), y++);
-                    Console.WriteLine(line);
+                    var parts = line.Split(':');
+                    if (parts.Length == 2)
+                    {
+                        string name = parts[0].PadRight(nameWidth); 
+                        string score = parts[1].PadLeft(scoreWidth); 
+                        string entry = $"{name} | {score}";
+                        Console.SetCursorPosition(x, y++);
+                        Console.WriteLine(entry);
+                    }
                 }
+                Console.SetCursorPosition(width - (highScoresTitle.Length / 2 + updateMessage.Length / 2), y);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine(updateMessage);
+                Console.ResetColor();
             }
             else
             {
                 Console.WriteLine("No high scores yet.");
             }
-            Console.SetCursorPosition(width - (highScoresTitle.Length/2  + updateMessage.Length/ 2), y);
-            Console.WriteLine(updateMessage);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error reading high scores: {ex.Message}");
         }
     }
+
+
 
     void DisplayGameOver(int score)
     {
@@ -431,14 +447,14 @@ After Game Over, press Enter to restart.
         Console.ForegroundColor = ConsoleColor.DarkRed;
         string gameOverMessage = @"
 
-░██████╗░░█████╗░███╗░░░███╗███████╗  ░█████╗░██╗░░░██╗███████╗██████╗░
-██╔════╝░██╔══██╗████╗░████║██╔════╝  ██╔══██╗██║░░░██║██╔════╝██╔══██╗
-██║░░██╗░███████║██╔████╔██║█████╗░░  ██║░░██║╚██╗░██╔╝█████╗░░██████╔╝
-██║░░╚██╗██╔══██║██║╚██╔╝██║██╔══╝░░  ██║░░██║░╚████╔╝░██╔══╝░░██╔══██╗
-╚██████╔╝██║░░██║██║░╚═╝░██║███████╗  ╚█████╔╝░░╚██╔╝░░███████╗██║░░██║
-░╚═════╝░╚═╝░░╚═╝╚═╝░░░░░╚═╝╚══════╝  ░╚════╝░░░░╚═╝░░░╚══════╝╚═╝░░╚═╝
+    ░██████╗░░█████╗░███╗░░░███╗███████╗  ░█████╗░██╗░░░██╗███████╗██████╗░
+    ██╔════╝░██╔══██╗████╗░████║██╔════╝  ██╔══██╗██║░░░██║██╔════╝██╔══██╗
+    ██║░░██╗░███████║██╔████╔██║█████╗░░  ██║░░██║╚██╗░██╔╝█████╗░░██████╔╝
+    ██║░░╚██╗██╔══██║██║╚██╔╝██║██╔══╝░░  ██║░░██║░╚████╔╝░██╔══╝░░██╔══██╗
+    ╚██████╔╝██║░░██║██║░╚═╝░██║███████╗  ╚█████╔╝░░╚██╔╝░░███████╗██║░░██║
+    ░╚═════╝░╚═╝░░╚═╝╚═╝░░░░░╚═╝╚══════╝  ░╚════╝░░░░╚═╝░░░╚══════╝╚═╝░░╚═╝
 
-Your final score: " + (score == 0 ? "0" : score.ToString());
+    Your final score: " + (score == 0 ? "0" : score.ToString());
 
         // Display the GAME OVER message centered on the screen
         int screenWidth = Console.WindowWidth;
@@ -460,20 +476,22 @@ Your final score: " + (score == 0 ? "0" : score.ToString());
         // Add the prompt directly below the final score
         string prompt = "Press Enter to play again, or Press any other key to Escape.";
         int promptX = (screenWidth - prompt.Length) / 2;
-        int promptY = startY + totalMessageHeight;
+        int promptY = height -1 ;
 
         Console.SetCursorPosition(promptX, promptY);
         Console.WriteLine(prompt);
 
-        SaveHighScore(score);
+        SaveHighScore(playerName, score);
 
-        // Wait for the player to press Enter to play again or Escape to exit
+        // Wait for the player to press Enter to play aga5in or Escape to exit
         ConsoleKey key = Console.ReadKey(true).Key;
         if (key == ConsoleKey.Enter)
         {
             playAgain = true;
         }
     }
+
+
 
     try
     {
@@ -562,9 +580,11 @@ Your final score: " + (score == 0 ? "0" : score.ToString());
                     {
                         velocity = Math.Max(velocity - 2, 10);  // Increase speed, ensuring it doesn't go below a threshold
                         sleep = TimeSpan.FromMilliseconds(velocity);
+
                         WindowsMediaPlayer eatSound = new WindowsMediaPlayer();
                         eatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
                         eatSound.controls.play();
+
                         PositionFood();
 
                         normalFoodCounter++;
@@ -639,10 +659,7 @@ Your final score: " + (score == 0 ? "0" : score.ToString());
             Console.Clear();
             Console.WriteLine(exception?.ToString() ?? "Snake was closed.");
         }
-
     } while (playAgain);
-
-
 
 enum Direction
 {
