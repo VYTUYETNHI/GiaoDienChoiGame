@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="PlayerScores.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <COMReference Include="WMPLib">
       <VersionMinor>0</VersionMinor>
       <VersionMajor>1</VersionMajor>
