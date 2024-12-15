@@ -11,7 +11,7 @@ Exception? exception = null;
 bool playAgain;
 do
 {
-    playAgain = false; // Khởi tạo trạng thái "chơi lại"
+    playAgain = false; //Initialize replay state
     DisplayBanner();
     DisplayInstructions();
 
@@ -23,15 +23,15 @@ do
     string? input;
     Console.ForegroundColor = ConsoleColor.Green;
 
-    // Calculate the starting position to center the prompt horizontally
-    int consoleWidth = Console.WindowWidth; // Get the width of the console window
-    int startPosition = (consoleWidth - prompt.Length) / 2; // Center alignment calculation
+    //Calculate the starting position to center the prompt horizontally
+    int consoleWidth = Console.WindowWidth; //Get the width of the console window
+    int startPosition = (consoleWidth - prompt.Length) / 2; //Center alignment calculation
 
-    // Print the prompt at the calculated centered position
-    Console.SetCursorPosition(startPosition, Console.CursorTop); // Move the cursor to the starting position
+    //Print the prompt at the calculated centered position
+    Console.SetCursorPosition(startPosition, Console.CursorTop); //Move the cursor to the starting position
     Console.Write(prompt); // Display the prompt message
 
-    // Position the cursor immediately after the prompt for user input
+    //Position the cursor immediately after the prompt for user input
     Console.SetCursorPosition(startPosition + prompt.Length, Console.CursorTop);
 
     while (!int.TryParse(input = Console.ReadLine(), out speedInput) || speedInput < 1 || 3 < speedInput)
@@ -43,19 +43,20 @@ do
         }
         else
         {
-            // Display an error message for invalid input
+            //Display an error message for invalid input
             string error = "Invalid Input. Try Again...";
             Console.SetCursorPosition((consoleWidth - error.Length) / 2, Console.CursorTop); // Center the error message
-            Console.WriteLine(error); // Show the error message
+            Console.WriteLine(error); //Show the error message
 
-            // Reprint the prompt after the error message, maintaining alignment
+            //Reprint the prompt after the error message, maintaining alignment
             Console.SetCursorPosition(startPosition, Console.CursorTop); // Move cursor back to the prompt position
-            Console.Write(prompt); // Display the prompt again
+            Console.Write(prompt); //Display the prompt again
 
-            // Position the cursor after the prompt for the next user input
+            //Position the cursor after the prompt for the next user input
             Console.SetCursorPosition(startPosition + prompt.Length, Console.CursorTop);
         }
     }
+
     Console.ResetColor();
 
     int[] velocities = { 100, 70, 50 };
@@ -63,9 +64,9 @@ do
     char[] DirectionChars = { '■', '■', '■', '■' };
     char[] listOfFoodChars = { '◉', '◆', '●', '◈' };
     TimeSpan sleep = TimeSpan.FromMilliseconds(velocity);
+
     int width = Console.WindowWidth;
     int height = Console.WindowHeight;
-
     int headerHeight = 1;
     int footerHeight = 1;
     int sideWidth = 1;
@@ -77,21 +78,19 @@ do
 
     bool isPaused = false;
     bool closeRequested = false;
-    Random random = new Random();
 
-    (int specialX, int specialY) = (-1, -1); // Special food variable
+    Random random = new Random();
+    List<(int X, int Y)> possibleCoordinates = new();
+    (int specialX, int specialY) = (-1, -1); //Special food variable
     DateTime specialFoodSpawnTime = DateTime.MinValue;
     TimeSpan specialFoodLifetime = TimeSpan.FromSeconds(7);
     bool specialFoodActive = false;
-    int normalFoodCounter = 0; // Count the number of times normal food is eaten
-    bool specialFoodBlinking = false; // To control the blinking effect
-
-    List<(int X, int Y)> possibleCoordinates = new();
+    int normalFoodCounter = 0; //Count the number of times normal food is eaten
+    bool specialFoodBlinking = false; //To control the blinking effect
 
     void PositionFood()
     {
         Random random = new Random();
-
         List<(int X, int Y)> possibleCoordinates = new();
         for (int i = sideWidth + 1; i <= (width - sideWidth - 1); i++)
         {
@@ -103,14 +102,14 @@ do
                 }
             }
         }
-
         if (possibleCoordinates.Count > 0)
         {
             var (X, Y) = possibleCoordinates[random.Next(possibleCoordinates.Count)];
             map[X, Y] = Tile.Food;
 
             char foodChar = listOfFoodChars[random.Next(listOfFoodChars.Length)];
-            var colors = new List<ConsoleColor> { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Blue, ConsoleColor.Yellow, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.DarkYellow };
+            var colors = new List<ConsoleColor> { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Blue, 
+                ConsoleColor.Yellow, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.DarkYellow };
             Console.SetCursorPosition(X, Y);
             Console.ForegroundColor = colors[random.Next(colors.Count)];
             Console.Write(foodChar);
@@ -130,7 +129,6 @@ do
                 }
             }
         }
-
         if (possibleCoordinates.Count > 0)
         {
             (specialX, specialY) = possibleCoordinates[random.Next(possibleCoordinates.Count)];
@@ -143,11 +141,10 @@ do
             Console.ResetColor();
         }
     }
-    //check special food's lifetime
+    //Check special food's lifetime
     if (specialFoodActive)
     {
         var timeElapsed = DateTime.Now - specialFoodSpawnTime;
-
         if (timeElapsed > specialFoodLifetime)
         {
             specialFoodActive = false;
@@ -156,7 +153,7 @@ do
         }
         else if (timeElapsed > specialFoodLifetime - TimeSpan.FromSeconds(1))
         {
-            //make the special food blink during the last 1 sec
+            //Make the special food blink during the last 1 second
             specialFoodBlinking = !specialFoodBlinking;
             Console.SetCursorPosition(specialX, specialY);
             Console.ForegroundColor = specialFoodBlinking ? ConsoleColor.Yellow : ConsoleColor.Black;
@@ -189,12 +186,12 @@ do
         string footerPause = "[Enter]: Pause the game";
         string footerScore = $"Score: {score}";
 
-        //top border
+        //Draw top border
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.SetCursorPosition(1, 0);
         Console.Write('╔' + new string('═', width - 3) + '╗');
 
-        //header
+        //Header
         Console.SetCursorPosition((width - title.Length) / 2, 0);
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.Write(title);
@@ -203,12 +200,12 @@ do
         Console.ForegroundColor = ConsoleColor.Magenta;
         Console.Write(headerSpeed);
 
-        //bottom border
+        //Draw bottom border
         Console.SetCursorPosition(1, height - 2);
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.Write('╚' + new string('═', width - 3) + '╝');
 
-        //side borders
+        //Draw side borders
         for (int y = 1; y < height - 2; y++)
         {
             Console.SetCursorPosition(1, y);
@@ -217,7 +214,7 @@ do
             Console.Write('║');
         }
 
-        //footer
+        //Footer
         Console.SetCursorPosition(2, height - 1);
         Console.ForegroundColor = ConsoleColor.Green;
         Console.Write("[ESC]: Exit");
@@ -230,7 +227,6 @@ do
         Console.ForegroundColor = ConsoleColor.Magenta;
         Console.Write($"{footerScore} 🌟");
 
-        //reset color
         Console.ResetColor();
     }
     void DisplayBanner()
@@ -243,25 +239,25 @@ do
 ██║  ██║╚██████╔╝██║ ╚████║   ██║   ██║██║ ╚████║╚██████╔╝     ███████╗██║ ╚████║██║  ██║██║  ██╗███████╗
 ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
 
-        // Clear the screen
+        //Clear the screen
         Console.Clear();
 
-        // Set text color to dark red
+        //Set text color to dark red
         Console.ForegroundColor = ConsoleColor.DarkRed;
 
-        // Display the banner centered
+        //Display the banner centered
         CenterTextOnScreen(banner);
 
-        // Reset the default color
+        //Reset the default color
         Console.ResetColor();
 
-        // Display the message below the banner, also centered
+        //Display the message below the banner, also centered
         string message = "\nPress any key to continue...";
-        // Calculate vertical position after banner
+        //Calculate vertical position after banner
         int messageVerticalPosition = Console.WindowHeight / 2 + (banner.Split('\n').Length / 2);
         CenterTextOnScreen(message, messageVerticalPosition);
 
-        // Wait for the user to press any key to continue
+        //Wait for the user to press any key to continue
         Console.ReadKey(true);
     }
     void CenterTextOnScreen(string text, int verticalPosition = -1)
@@ -269,29 +265,29 @@ do
         int consoleWidth = Console.WindowWidth;
         int consoleHeight = Console.WindowHeight;
 
-        // Split the text into lines (if multi-line)
+        //Split the text into lines (if multi-line)
         var lines = text.Split(new[] { '\n' }, StringSplitOptions.None);
 
-        // If verticalPosition is not specified, calculate the vertical center
+        //If verticalPosition is not specified, calculate the vertical center
         if (verticalPosition == -1)
         {
             verticalPosition = (consoleHeight - lines.Length) / 2;
         }
 
-        // Print each line of text centered horizontally
+        //Print each line of text centered horizontally
         foreach (var line in lines)
         {
             int horizontalCenter = (consoleWidth - line.Length) / 2;
             Console.SetCursorPosition(horizontalCenter, verticalPosition);
             Console.WriteLine(line);
-            verticalPosition++;  // Move to the next line
+            verticalPosition++;  //Move to the next line
         }
     }
     void DisplayInstructions()
     {
-        // Clear the screen for a clean slate to display the instructions 
+        //Clear the screen for a clean slate to display the instructions 
         Console.Clear();
-        Console.ForegroundColor = ConsoleColor.DarkGreen;  // Set text color to dark green
+        Console.ForegroundColor = ConsoleColor.DarkGreen;  //Set text color to dark green
 
         string instructions = @"
 |------------------------------------------------------------------|
@@ -315,17 +311,17 @@ After Game Over, press Enter to restart.
 --------------------------------------------------------
 ";
 
-        // Center the text and the frame using the CenterTextOnScreen method
+        //Center the text and the frame using the CenterTextOnScreen method
         CenterTextOnScreen(instructions);
-        Console.ReadKey(true); // Wait for the user to press any key before selecting the speed.
+        Console.ReadKey(true); //Wait for the user to press any key before selecting the speed.
     }
     void CenterTextHorizontally(string text)
     {
-        int consoleWidth = Console.WindowWidth;  // Get the width of the console window
+        int consoleWidth = Console.WindowWidth;  //Get the width of the console window
         int horizontalCenter = (consoleWidth - text.Length) / 2;  // Calculate the center position
 
         Console.SetCursorPosition(horizontalCenter, Console.CursorTop);  // Set the cursor at the calculated position
-        Console.WriteLine(text);  // Write the text at the center
+        Console.WriteLine(text);  //Write the text at the center
     }
     string GetPlayerName()
     {
@@ -334,10 +330,10 @@ After Game Over, press Enter to restart.
         int consoleWidth = Console.WindowWidth;
         int consoleHeight = Console.WindowHeight;
 
-        // Calculate vertical center position for header
-        int verticalCenter = consoleHeight / 2 - 4; // Adjusting to leave some space around
+        //Calculate vertical center position for header
+        int verticalCenter = consoleHeight / 2 - 4; //Adjusting to leave some space around
 
-        // Centered header for the game prompt
+        //Centered header for the game prompt
         Console.ForegroundColor = ConsoleColor.Green;
 
         string header = "*****************************************";
@@ -352,26 +348,26 @@ After Game Over, press Enter to restart.
         Console.SetCursorPosition((consoleWidth - footer.Length) / 2, verticalCenter + 2);
         Console.WriteLine(footer);
 
-        // Prompt for player name (centered relative to the title)
+        //Prompt for player name (centered relative to the title)
         string prompt = "Please enter your name:";
         Console.SetCursorPosition((consoleWidth - prompt.Length) / 2, verticalCenter + 4);
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine(prompt);
         Console.ResetColor();
 
-        // Start from the center of the screen for the name input
+        //Start from the center of the screen for the name input
         Console.SetCursorPosition(consoleWidth / 2, verticalCenter + 5); // Start from the center horizontally
 
-        // Read the player's name, with the cursor starting from the center and expanding outward
+        //Read the player's name, with the cursor starting from the center and expanding outward
         string? playerName = Console.ReadLine();
 
-
-        // Return the player's name
+        //Return the player's name
         return playerName;
     }
 
     void WaitForInputAndBlink()
     {
+        //Store the start time of the blinking effect
         DateTime blinkStart = DateTime.Now;
         bool visible = true;
 
@@ -380,30 +376,32 @@ After Game Over, press Enter to restart.
             if ((DateTime.Now - blinkStart).Milliseconds >= 500)
             {
                 Console.SetCursorPosition(X, Y);
-                Console.Write(visible ? ' ' : '▶');
-                visible = !visible;
+                Console.Write(visible ? ' ' : '▶'); //' ' to hide, '▶' to display
+                visible = !visible; //Toggle the visibility state
                 blinkStart = DateTime.Now;
             }
-
+            //Check if a key is pressed
             if (Console.KeyAvailable)
             {
-                GetDirection();
+                GetDirection(); //Get the direction from keyboard input
             }
         }
     }
     void SaveHighScore(string playerName, int score)
     {
-        string filePath = "highscore.txt";
-        List<(string Name, int Score)> highScores = new List<(string, int)>();
-        string updateMessage = "No new high score.";
+        string filePath = "highscore.txt"; //File to store high scores
+        List<(string Name, int Score)> highScores = new List<(string, int)>(); //List to store high scores
+        string updateMessage = "No new high score."; //Default update message
 
         try
         {
+            //Check if the high score file exists
             if (File.Exists(filePath))
             {
                 string[] lines = File.ReadAllLines(filePath);
                 foreach (string line in lines)
                 {
+                    //Split each line into Name and Score
                     var parts = line.Split(':');
                     if (parts.Length == 2 && int.TryParse(parts[1], out int existingScore))
                     {
@@ -411,10 +409,12 @@ After Game Over, press Enter to restart.
                     }
                 }
             }
-   
             highScores.Add((playerName, score));
+            //Sort the list by score in descending order and keep the top 5 scores
             highScores = highScores.OrderByDescending(s => s.Score).Take(5).ToList();
             File.WriteAllLines(filePath, highScores.Select(s => $"{s.Name}:{s.Score}"));
+
+            //Check if the player's score is in the high scores list
             if (highScores.Any(s => s.Score == score && s.Name == playerName))
             {
                 updateMessage = "High scores updated!";
@@ -425,33 +425,36 @@ After Game Over, press Enter to restart.
             Console.WriteLine($"Error saving high score: {ex.Message}");
         }
 
+        //Display the updated high scores
         DisplayHighScores(updateMessage);
     }
 
     void DisplayHighScores(string updateMessage)
     {
         string filePath = "highscore.txt";
-        int nameWidth = 15; 
-        int scoreWidth = 5; 
+        int nameWidth = 15; //Width for the player's name
+        int scoreWidth = 5; //Width for the score
 
         try
         {
             if (File.Exists(filePath))
             {
                 string[] lines = File.ReadAllLines(filePath);
-                string highScoresTitle = "||===== High Scores =====||";
-                int totalWidth = nameWidth + scoreWidth + 7; 
-                int x = Console.WindowWidth - totalWidth - 2; 
-                int y = 0;
-
- 
+                string highScoresTitle = "||===== High Scores =====||"; //Title for the leaderboard
+                int totalWidth = nameWidth + scoreWidth + 7;  //Total width for formatting
+                int x = Console.WindowWidth - totalWidth - 2; //Align leaderboard to the right
+                int y = 0; //Starting row for the leaderboard
+                
+                //Print the leaderboard title
                 Console.SetCursorPosition(x, y++);
                 Console.WriteLine(highScoresTitle);
 
+                //Print a separator below the title
                 string separator = new string('-', totalWidth);
                 Console.SetCursorPosition(x, y++);
                 Console.WriteLine(separator);
 
+                //Loop through each high score and display it
                 foreach (string line in lines)
                 {
                     var parts = line.Split(':');
@@ -464,6 +467,8 @@ After Game Over, press Enter to restart.
                         Console.WriteLine(entry);
                     }
                 }
+
+                //Display the update message centered below the high scores
                 Console.SetCursorPosition(width - (highScoresTitle.Length / 2 + updateMessage.Length / 2), y);
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(updateMessage);
@@ -480,13 +485,11 @@ After Game Over, press Enter to restart.
         }
     }
 
-
-
     void DisplayGameOver(int score)
     {
         Console.Clear();
 
-        // Set the color for the "GAME OVER" text
+        //Set the color for the "GAME OVER" text
         Console.ForegroundColor = ConsoleColor.DarkRed;
         string gameOverMessage = @"
 
@@ -499,7 +502,7 @@ After Game Over, press Enter to restart.
 
     Your final score: " + (score == 0 ? "0" : score.ToString());
 
-        // Display the GAME OVER message centered on the screen
+        //Display the GAME OVER message centered on the screen
         int screenWidth = Console.WindowWidth;
         int screenHeight = Console.WindowHeight;
 
@@ -508,7 +511,7 @@ After Game Over, press Enter to restart.
 
         int startY = (screenHeight - totalMessageHeight) / 2;
 
-        // Print each line of the GAME OVER message
+        //Print each line of the GAME OVER message
         for (int i = 0; i < messageLines.Length; i++)
         {
             int x = (screenWidth - messageLines[i].Length) / 2;
@@ -516,7 +519,7 @@ After Game Over, press Enter to restart.
             Console.WriteLine(messageLines[i]);
         }
 
-        // Add the prompt directly below the final score
+        //Add the prompt directly below the final score
         string prompt = "Press Enter to play again, or Press any other key to Escape.";
         int promptX = (screenWidth - prompt.Length) / 2;
         int promptY = height -1 ;
@@ -524,186 +527,213 @@ After Game Over, press Enter to restart.
         Console.SetCursorPosition(promptX, promptY);
         Console.WriteLine(prompt);
 
+        //Save the player's high score
         SaveHighScore(playerName, score);
 
-        // Wait for the player to press Enter to play aga5in or Escape to exit
+        //Wait for the player to press Enter to play aga5in or Escape to exit
         ConsoleKey key = Console.ReadKey(true).Key;
         if (key == ConsoleKey.Enter)
         {
-            playAgain = true;
+            playAgain = true; //Set the flag to replay the game
         }
     }
 
-
-
     try
     {
-            Console.CursorVisible = false;
-            Console.Clear();
-            DrawConsole(0, velocity);
-            snake.Enqueue((X, Y));
-            map[X, Y] = Tile.Snake;
-            PositionFood();
-            Console.SetCursorPosition(X, Y);
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("▶︎");
-            Console.ResetColor();
+        //Hide the cursor and clear the console for a clean game start
+        Console.CursorVisible = false;
+        Console.Clear();
 
-            WaitForInputAndBlink();
+        DrawConsole(0, velocity); //Draw the initial game screen
 
-            while (!closeRequested)
+        //Place the snake's starting position
+        snake.Enqueue((X, Y));
+        map[X, Y] = Tile.Snake;
+
+        //Genarate the first food position
+        PositionFood();
+
+        //Display the snake's starting position on the map
+        Console.SetCursorPosition(X, Y);
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write("▶︎");
+        Console.ResetColor();
+
+        WaitForInputAndBlink(); //Wait for the player's input and animate the blinking arrow
+
+        //Main game loop
+        while (!closeRequested)
+        {
+            //Check if the console window size has been changed
+            if (Console.WindowWidth != width || Console.WindowHeight != height)
             {
-                if (Console.WindowWidth != width || Console.WindowHeight != height)
+                Console.Clear();
+                Console.Write("Console was resized. Snake game has ended.");
+                return;
+            }
+
+            //Handle keyboard input for game controls
+            if (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.Enter)
                 {
-                    Console.Clear();
-                    Console.Write("Console was resized. Snake game has ended.");
-                    return;
+                    isPaused = !isPaused;  // Toggle pause state
                 }
-                if (Console.KeyAvailable)
+                else
                 {
-                    var key = Console.ReadKey(true).Key;
-                    if (key == ConsoleKey.Enter)
+                    //Update direction based on key press
+                    switch (key)
                     {
-                        isPaused = !isPaused;  // Toggle pause state
+                        case ConsoleKey.UpArrow:
+                            if (direction != Direction.Down) direction = Direction.Up; // Prevent reversing
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (direction != Direction.Up) direction = Direction.Down; // Prevent reversing
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            if (direction != Direction.Right) direction = Direction.Left; // Prevent reversing
+                            break;
+                        case ConsoleKey.RightArrow:
+                            if (direction != Direction.Left) direction = Direction.Right; //Prevent reversing
+                            break;
+                        //Exit the game on Escape key press
+                        case ConsoleKey.Escape:
+                            closeRequested = true;
+                            DisplayGameOver(snake.Count - 1);//Allow the player to exit the game
+                            break;
                     }
-                    else
-                    {
-                        // Update direction based on key press
-                        switch (key)
-                        {
-                            case ConsoleKey.UpArrow:
-                                if (direction != Direction.Down) direction = Direction.Up; // Prevent reversing
-                                break;
-                            case ConsoleKey.DownArrow:
-                                if (direction != Direction.Up) direction = Direction.Down; // Prevent reversing
-                                break;
-                            case ConsoleKey.LeftArrow:
-                                if (direction != Direction.Right) direction = Direction.Left; // Prevent reversing
-                                break;
-                            case ConsoleKey.RightArrow:
-                                if (direction != Direction.Left) direction = Direction.Right; // Prevent reversing
-                                break;
-                            case ConsoleKey.Escape:
-                                closeRequested = true;
-                                DisplayGameOver(snake.Count - 1);// Allow the player to exit the game
-                                break;
-                        }
-                    }
-                }
-                if ((!isPaused))
-                {
-
-                    switch (direction)
-                    {
-                        case Direction.Up: Y--; break;
-                        case Direction.Down: Y++; break;
-                        case Direction.Left: X--; break;
-                        case Direction.Right: X++; break;
-                    }
-                    if (Y < headerHeight || Y >= (height - footerHeight - 1) || X <= sideWidth || X >= (width - sideWidth) ||
-                        map[X, Y] is Tile.Snake)
-                    {
-                        WindowsMediaPlayer crashSound = new WindowsMediaPlayer();
-                        crashSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeHittingSound.wav";
-                        crashSound.controls.play();
-                        Console.Clear();
-                        //string? replayInput = Console.ReadLine();
-                        DisplayGameOver(snake.Count - 1);
-                        playAgain = playAgain;
-                        break;
-                    }
-
-                    Console.SetCursorPosition(X, Y);
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.Write(DirectionChars[(int)direction!]);
-                    Console.ResetColor();
-                    snake.Enqueue((X, Y));
-
-                    if (map[X, Y] is Tile.Food)
-                    {
-                        velocity = Math.Max(velocity - 2, 10);  // Increase speed, ensuring it doesn't go below a threshold
-                        sleep = TimeSpan.FromMilliseconds(velocity);
-
-                        WindowsMediaPlayer eatSound = new WindowsMediaPlayer();
-                        eatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
-                        eatSound.controls.play();
-
-                        PositionFood();
-
-                        normalFoodCounter++;
-
-                        if (normalFoodCounter % 5 == 0)
-                        {
-                            PositionSpecialFood();
-                        }
-                    }
-                    else if (specialFoodActive && X == specialX && Y == specialY)
-                    {
-                        specialFoodActive = false;
-
-                        map[specialX, specialY] = Tile.Open;
-                        Console.SetCursorPosition(specialX, specialY);
-                        Console.Write(' ');
-                        snake.Enqueue((X, Y));
-                        snake.Enqueue((X, Y));
-
-                        WindowsMediaPlayer specialEatSound = new WindowsMediaPlayer();
-                        specialEatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
-                        specialEatSound.controls.play();
-                    }
-                    else
-                    {
-                        (int x, int y) = snake.Dequeue();
-                        map[x, y] = Tile.Open;
-                        Console.SetCursorPosition(x, y);
-                        Console.Write(' ');
-                    }
-
-                    map[X, Y] = Tile.Snake;
-
-                    if (specialFoodActive)
-                    {
-                        var timeElapsed = DateTime.Now - specialFoodSpawnTime;
-
-                        if (timeElapsed > specialFoodLifetime)
-                        {
-                            specialFoodActive = false;
-                            Console.SetCursorPosition(specialX, specialY);
-                            Console.Write(' ');
-                        }
-                        else if (timeElapsed > specialFoodLifetime - TimeSpan.FromSeconds(1))
-                        {
-                            specialFoodBlinking = !specialFoodBlinking;
-                            Console.SetCursorPosition(specialX, specialY);
-                            Console.ForegroundColor = specialFoodBlinking ? ConsoleColor.Yellow : ConsoleColor.Black;
-                            Console.Write('★');
-                            Console.ResetColor();
-                        }
-                    }
-
-                    if (Console.KeyAvailable)
-                    {
-                        GetDirection();
-                    }
-
-                    DrawConsole(snake.Count - 1, velocity);
-                    System.Threading.Thread.Sleep(sleep);
                 }
             }
-        }
-        catch (Exception e)
-        {
-            exception = e;
-            throw;
-        }
-        finally
-        {
-            Console.CursorVisible = true;
-            Console.Clear();
-            Console.WriteLine(exception?.ToString() ?? "Snake was closed.");
-        }
-    } while (playAgain);
 
+            if ((!isPaused))
+            {
+                //Move the snake in the current direction
+                switch (direction)
+                {
+                    case Direction.Up: Y--; break;
+                    case Direction.Down: Y++; break;
+                    case Direction.Left: X--; break;
+                    case Direction.Right: X++; break;
+                }
+
+                //Check for collistion with walls or snake body
+                if (Y < headerHeight || Y >= (height - footerHeight - 1) || X <= sideWidth || X >= (width - sideWidth) || map[X, Y] is Tile.Snake)
+                {
+                    //Play crash sound and show Game Over screen
+                    WindowsMediaPlayer crashSound = new WindowsMediaPlayer();
+                    crashSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeHittingSound.wav";
+                    crashSound.controls.play();
+                    Console.Clear();
+                    DisplayGameOver(snake.Count - 1);
+                    playAgain = playAgain;
+                    break;
+
+                }
+
+                //Update snake position on the map
+                Console.SetCursorPosition(X, Y);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write(DirectionChars[(int)direction!]);
+                Console.ResetColor();
+                snake.Enqueue((X, Y));
+
+                //Handle food comsumption
+                if (map[X, Y] is Tile.Food)
+                {
+                    velocity = Math.Max(velocity - 2, 10);  //Increase speed, ensuring it doesn't go below a threshold
+                    sleep = TimeSpan.FromMilliseconds(velocity);
+
+                    //Play eating sound
+                    WindowsMediaPlayer eatSound = new WindowsMediaPlayer();
+                    eatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
+                    eatSound.controls.play();
+
+                    PositionFood();
+
+                    normalFoodCounter++;
+
+                    //Spawn special food every 5 normal foods
+                    if (normalFoodCounter % 5 == 0)
+                    {
+                        PositionSpecialFood();
+                    }
+                }
+                else if (specialFoodActive && X == specialX && Y == specialY)
+                {
+                    specialFoodActive = false; //Handle special food consumption
+
+                    map[specialX, specialY] = Tile.Open;
+                    Console.SetCursorPosition(specialX, specialY);
+                    Console.Write(' ');
+
+                    //Growsnake by 2 additional segments
+                    snake.Enqueue((X, Y));
+                    snake.Enqueue((X, Y));
+
+                    //Play eating sound
+                    WindowsMediaPlayer specialEatSound = new WindowsMediaPlayer();
+                    specialEatSound.URL = @"C:\\GiaoDienChoiGame\\GiaoDienChoiGame\\snakeEatingSound.wav";
+                    specialEatSound.controls.play();
+                }
+                else
+                {
+                    //Remove the tail if no food is eaten
+                    (int x, int y) = snake.Dequeue();
+                    map[x, y] = Tile.Open;
+                    Console.SetCursorPosition(x, y);
+                    Console.Write(' ');
+                }
+
+                //Update the map with the snake's new head position
+                map[X, Y] = Tile.Snake;
+
+                if (specialFoodActive)
+                {
+                    var timeElapsed = DateTime.Now - specialFoodSpawnTime;
+
+                    if (timeElapsed > specialFoodLifetime)
+                    {
+                        //Remove special food if it has expired
+                        specialFoodActive = false;
+                        Console.SetCursorPosition(specialX, specialY);
+                        Console.Write(' ');
+                    }
+                    else if (timeElapsed > specialFoodLifetime - TimeSpan.FromSeconds(1))
+                    {
+                        //Blink the special food in the last second
+                        specialFoodBlinking = !specialFoodBlinking;
+                        Console.SetCursorPosition(specialX, specialY);
+                        Console.ForegroundColor = specialFoodBlinking ? ConsoleColor.Yellow : ConsoleColor.Black;
+                        Console.Write('★');
+                        Console.ResetColor();
+                    }
+                }
+
+                if (Console.KeyAvailable)
+                {
+                    GetDirection();
+                }
+
+                //Redraw the game console with updated information
+                DrawConsole(snake.Count - 1, velocity);
+                System.Threading.Thread.Sleep(sleep);
+            }
+        }
+    }
+    catch (Exception e)
+    {
+        exception = e;
+        throw;
+    }
+    finally
+    {
+        Console.CursorVisible = true;
+        Console.Clear();
+        Console.WriteLine(exception?.ToString() ?? "Snake was closed.");
+    }
+
+} while (playAgain);
 enum Direction
 {
     Up = 0,
@@ -711,7 +741,6 @@ enum Direction
     Left = 2,
     Right = 3,
 }
-
 enum Tile
 {
     Open = 0,
